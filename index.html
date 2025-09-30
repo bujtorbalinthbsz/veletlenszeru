@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Véletlenszám-kirakó</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            gap: 5px;
+            margin: 20px auto;
+            width: max-content;
+        }
+
+        .cell {
+            border: 1px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            background: #f0f0f0;
+            cursor: pointer;
+            width: 60px;
+            height: 60px;
+        }
+
+        .cell.selected {
+            background: lightblue;
+            border: 2px solid blue;
+        }
+    </style>
+</head>
+<body>
+    <h1>Véletlenszám-kirakó</h1>
+    <button onclick="startGame(3)">3x3</button>
+    <button onclick="startGame(4)">4x4</button>
+    <div id="game"></div>
+    <p id="status"></p>
+
+    <script>
+        let firstCell = null;
+
+        function startGame(size) {
+            const numbers = [];
+            for (let i = 1; i <= size * size; i++) numbers.push(i);
+            numbers.sort(() => Math.random() - 0.5); // keverés
+
+            const gameDiv = document.getElementById("game");
+            gameDiv.innerHTML = ""; // töröljük a régit
+            gameDiv.className = "grid";
+            gameDiv.style.gridTemplate = `repeat(${size}, 60px) / repeat(${size}, 60px)`;
+
+            numbers.forEach(num => {
+                const cell = document.createElement("div");
+                cell.textContent = num;
+                cell.className = "cell";
+                cell.addEventListener("click", () => onCellClick(cell));
+                gameDiv.appendChild(cell);
+            });
+
+            document.getElementById("status").textContent = "Rendezd növekvő sorrendbe!";
+            firstCell = null;
+        }
+
+        function onCellClick(cell) {
+            if (firstCell === null) {
+                firstCell = cell;
+                cell.classList.add("selected");
+            } else if (firstCell === cell) {
+                // ugyanarra kattintottunk
+                cell.classList.remove("selected");
+                firstCell = null;
+            } else {
+                // csere
+                let tmp = firstCell.textContent;
+                firstCell.textContent = cell.textContent;
+                cell.textContent = tmp;
+                firstCell.classList.remove("selected");
+                firstCell = null;
+
+                checkWin();
+            }
+        }
+
+        function checkWin() {
+            const cells = Array.from(document.querySelectorAll("#game .cell"));
+            const values = cells.map(c => parseInt(c.textContent));
+            for (let i = 0; i < values.length; i++) {
+                if (values[i] !== i + 1) return;
+            }
+            document.getElementById("status").textContent = "🎉 Gratulálok, nyertél!";
+        }
+    </script>
+</body>
+</html>
